@@ -65,5 +65,6 @@ export const getDB = (): Db => {
 export const closeDB = async (): Promise<void> => {
   if (client) {
     await client.close();
+    console.log("Database closed");
   }
 };

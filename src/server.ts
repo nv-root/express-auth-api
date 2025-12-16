@@ -3,7 +3,7 @@ import cors from "cors";
 import express from "express";
 import cookieParser from "cookie-parser";
 import type { Express, Request, Response } from "express";
-import { connectDB } from "./config/db.ts";
+import { closeDB, connectDB } from "./config/db.ts";
 import { errorHandler } from "./middleware/errorHandler.ts";
 import { CLIENT_ORIGIN, PORT } from "./utils/env.ts";
 
@@ -28,7 +28,18 @@ app.use("/api/user", userRoutes);
 
 app.use(errorHandler);
 
-app.listen(PORT, async () => {
-  await connectDB();
-  console.log(`Server is running on port ${PORT}`);
-});
+(async () => {
+  try {
+    await connectDB();
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+    process.on("SIGINT", async () => {
+      await closeDB();
+      process.exit(0);
+    });
+  } catch (error) {
+    console.error("Error starting server:", error);
+    process.exit(1);
+  }
+})();
